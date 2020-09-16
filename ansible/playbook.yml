@@ -1,0 +1,124 @@
+##################################################
+# Playbook: PoC Asterisk + sip.js
+##################################################
+---
+- hosts: all
+  become: true
+  vars_files:
+    - vars/default.yml
+
+  tasks:
+    - name: Configurar fecha y hora
+      timezone: America/El_Salvador
+
+    - name: Actualizar paquetes
+      apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
+      loop: [ 'aptitude' ]
+
+    - name: Install stack packages 
+      apt: name={{ item }} update_cache=yes state=latest
+      #loop: [ 'nginx', 'mysql-server', 'python3-pymysql', 'php-fpm', 'php-mysql' ]
+      loop: [ 'asterisk', 'asterisk-modules', 'asterisk-core-sounds-es', 'nginx', 'git', 'npm', 'php-fpm' ]
+
+# Copiar certificados
+
+
+# Configurar Asterisk para soporte WebRTC
+
+# Configurar nombre del hosts
+
+# Configurar sip.conf
+
+# Configurar clientes SIP (2 WebRTC SIP y 2 non-WebRTC SIP)
+
+
+# Configurar extensions.conf
+
+# Reiniciar Asterisk
+
+
+
+# Instalacion y configuracion de Nginx
+
+
+# Configurar virtualhost nginx ssl
+
+
+# habilitar el VirtualHost
+
+
+# Instalar npm
+
+
+# Clonar proyecto sip.js y compilar los demos
+
+
+# instalar php7.3 y postgresql-11
+
+
+
+    
+# Nginx Configuration
+    - name: Sets Nginx conf file
+      template:
+        src: "files/nginx.conf.j2"
+        dest: "/etc/nginx/sites-available/{{ http_conf }}"
+
+    - name: Enables new site
+      file:
+        src: "/etc/nginx/sites-available/{{ http_conf }}"
+        dest: "/etc/nginx/sites-enabled/{{ http_conf }}"
+        state: link
+      notify: Reload Nginx
+    
+    - name: Removes "default" site
+      file:
+        path: "/etc/nginx/sites-enabled/default"
+        state: absent
+      notify: Reload Nginx
+
+# MySQL Configuration
+    - name: Sets the root password 
+      mysql_user: 
+        name: root 
+        password: "{{ mysql_root_password }}"
+        login_unix_socket: /var/run/mysqld/mysqld.sock
+
+    - name: Removes all anonymous user accounts
+      mysql_user:
+        name: ''
+        host_all: yes
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+    - name: Removes the MySQL test database
+      mysql_db: 
+        name: test 
+        state: absent
+        login_user: root
+        login_password: "{{ mysql_root_password }}"
+
+# UFW Configuration
+    - name: "UFW - Allow HTTP on port {{ http_port }}"
+      ufw:
+        rule: allow
+        port: "{{ http_port }}"
+        proto: tcp
+
+# Sets Up PHP Info Page
+    - name: Sets Up PHP Info Page
+      template:
+        src: "files/info.php.j2"
+        dest: "/var/www/html/info.php"
+
+  handlers:
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
+
+    - name: Restart Nginx
+      service:
+        name: nginx
+        state: restarted

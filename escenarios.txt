@@ -1,0 +1,21 @@
+Escenarios del PoC
+
+Integracion de telefono SIP en aplicacion WEB para hacer 
+y recibir llamadas de la red telefonica (PSTN) a traves 
+de una pasarela (Asterisk).
+
+Caso # 1: Usuario hace login a la aplicacion WEB y se registra 
+su extension en el servidor Asterisk.
+
+Caso # 2: Usuario hace llamada a aplicacion IVR en Asterisk.
+
+Caso # 3: Usuario llama a otro Usuario WEB en la misma planta Asterisk.
+Audio fluye en ambas vias.
+
+Caso # 4: Usuario llama a usuario de Red PSTN. (Telefono celular o fijo).
+Es necesario contar con un dialpad y controles basicos para el telefono
+embedido en la aplicacion WEB.
+
+Caso # 5: Usuario recibe llamada (y metadata) de red PSTN.
+
+Caso # 6: Usuario entra en conferencia con 2 o mas usuarios.
