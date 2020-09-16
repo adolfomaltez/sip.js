@@ -8,18 +8,11 @@
     - vars/default.yml
 
   tasks:
-    - name: Set timezone 
-      copy: content='America/El_Salvador'
-            dest=/etc/timezone
-            owner=root
-            group=root
-            mode=0644
-            backup=yes
-      #notify:
-      #  - update timezone
-  #handlers:
+    - name: Configurar timezone
+      timezone: name=America/El_Salvador
+      become: yes
 
-    - name: Update timezone
+    - name: Actualizar timezone
       command: dpkg-reconfigure --frontend noninteractive tzdata
 
     - name: Actualizar paquetes
