@@ -39,7 +39,7 @@
 
     - name: Copiar certificados validos
       copy:
-        src: "files/certs"
+        src: "files/certs/"
         dest: "/etc/asterisk/keys"
 
 # Configurar Asterisk para soporte WebRTC
