@@ -1,0 +1,211 @@
+# Prueba de Concepto (Poc).
+# Llamadas usando asterisk a traves del navegador.
+
+# Servidor Asterisk (debian buster "10.5") en vagrant
+
+vagrant up
+vagrant ssh
+
+
+# Instalacion y configuracion de Asterisk (16.2.1)
+# https://sipjs.com/guides/server-configuration/asterisk/
+
+dpkg-reconfigure tzdata
+
+apt-get update
+apt-get upgrade
+apt-get install asterisk asterisk-modules asterisk-core-sounds-es 
+
+# Copiar certificados SSL.
+mkdir /etc/asterisk/keys
+cd /etc/asterisk/keys
+scp certificados .
+
+asterisk.key
+asterisk.crt
+CA.crt
+
+# Configurar Asterisk para soporte WebRTC
+
+nano /etc/asterisk/http.conf
+
+;http.conf
+[general]
+enabled=yes
+bindaddr=0.0.0.0 ; Replace this with your IP address
+bindport=8088 ; Replace this with the port you want to listen on
+tlsenable=yes
+tlsbindaddr=192.168.50.10:8089 ; Replace this with your IP address
+tlscertfile=/etc/asterisk/keys/asterisk.crt
+tlsprivatekey=/etc/asterisk/keys/asterisk.key
+
+
+# Configurar nombre del hosts
+nano /etc/hosts
+
+192.168.50.10 asterisk.salud.gob.sv
+
+
+# Configurar clientes SIP (1 WebRTC SIP y 1 non-WebRTC SIP) 
+
+nano /et/asterisk/sip.conf
+
+realm=asterisk.salud.gob.sv 
+udpbindaddr=192.168.50.10 
+transport=udp 
+
+
+# Clientes SIP WebRTC y non-WebRTC
+
+nano /etc/asterisk/sip.conf
+
+[1060] ; This will be WebRTC client
+type=friend
+username=1060 ; The Auth user for SIP.js
+host=dynamic ; Allows any host to register
+secret=password ; The SIP Password for SIP.js
+encryption=yes ; Tell Asterisk to use encryption for this peer
+avpf=yes ; Tell Asterisk to use AVPF for this peer
+icesupport=yes ; Tell Asterisk to use ICE for this peer
+context=default ; Tell Asterisk which context to use when this peer is dialing
+directmedia=no ; Asterisk will relay media for this peer
+transport=tls,udp,ws,wss ; Asterisk will allow this peer to register on UDP or WebSockets
+force_avp=yes ; Force Asterisk to use avp. Introduced in Asterisk 11.11
+dtlsenable=yes ; Tell Asterisk to enable DTLS for this peer
+dtlsverify=fingerprint ; Tell Asterisk to verify DTLS fingerprint
+dtlscertfile=/etc/asterisk/keys/asterisk.pem ; Tell Asterisk where your DTLS cert file is
+dtlssetup=actpass ; Tell Asterisk to use actpass SDP parameter when setting up DTLS
+rtcp_mux=yes ; Tell Asterisk to do RTCP mux
+
+
+[1061]
+type=friend
+username=1061
+host=dynamic
+secret=password
+encryption=yes
+avpf=yes
+icesupport=yes
+context=default
+directmedia=no
+transport=udp,ws,wss
+force_avp=yes
+;dtlsenable=yes 
+;dtlsverify=fingerprint
+;dtlscertfile=/etc/asterisk/keys/asterisk.pem
+;dtlssetup=actpass
+rtcp_mux=yes
+
+
+[1070] ; This will be the legacy SIP client
+type=friend
+username=1070
+host=dynamic
+secret=password
+context=default
+
+[1071]
+type=friend
+username=1071
+host=dynamic
+secret=password
+context=default
+
+
+
+
+# Configurar extensions.conf
+nano /etc/aterisk/extensions.conf
+
+
+[default]
+exten => 1060,1,Dial(SIP/1060) ; Dialing 1060 will call the SIP client registered to 1060
+exten => 1061,1,Dial(SIP/1061) ; Dialing 1061 will call the SIP client registered to 1061
+exten => 1070,1,Dial(SIP/1070) ; Dialing 1070 will call the SIP client registered to 1070
+exten => 1071,1,Dial(SIP/1071) ; Dialing 1071 will call the SIP client registered to 1071
+
+
+
+
+# Reiniciar Asterisk
+/etc/init.d/asterisk restart
+
+
+# probar WSS URI en el navegador
+
+https://asterisk.salud.gob.sv:8089/ws
+
+
+
+# Instalacion y configuracion de Nginx
+apt-get install nginx git 
+
+cd /var/www/html
+
+git clone https://github.com/onsip/SIP.js.git
+
+
+# Configurar virtualhost nginx ssl
+
+nano /etc/nginx/sites-available/asterisk.salud.gob.sv
+
+server {
+        listen 80;
+        listen [::]:80;
+        server_name asterisk.salud.gob.sv;
+        return 301 https://$host$request_uri;
+}
+
+server {
+        listen 443;
+        listen [::]:443;
+        server_name asterisk.salud.gob.sv;
+
+        ssl on;
+        ssl_certificate /etc/asterisk/keys/asterisk.crt;
+        ssl_certificate_key /etc/asterisk/keys/asterisk.key;
+
+        access_log /var/log/nginx/asterisk.salud.gob.sv-access.log;
+        error_log /var/log/nginx/asterisk.salud.gob.sv-error.log;
+        
+        root /var/www/html;
+        #index login.php;
+
+    location / {
+        try_files $uri $uri/ =404;
+    }
+
+    #location ~ \.php$ {
+    #    include snippets/fastcgi-php.conf;
+    #    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+    #}
+}
+
+
+
+# habilitar el VirtualHost
+rm /etc/nginx/sites-enabled/default 
+ln -s /etc/nginx/sites-available/asterisk.salud.gob.sv /etc/nginx/sites-enabled/asterisk.salud.gob.sv
+
+/etc/init.d/nginx restart
+
+
+# Instalar npm
+apt-get install npm
+npm install npm@latest -g
+npm install pegjs
+
+cd /var/nginx/SIP.js
+npm install
+npm run build-demo
+
+# Acceder al demo
+
+https://asterisk.salud.gob.sv/SIP.js/demo/index.html
+
+
+
+
+# instalar php7.3 y postgresql-11
+# https://www.digitalocean.com/community/tutorials/how-to-install-linux-nginx-mariadb-php-lemp-stack-on-debian-10
+apt-get install php-fpm php-pgsql postgresql-11
