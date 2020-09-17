@@ -1,0 +1,9 @@
+{
+  "extends": "SIP.js/tsconfig-base.json",
+  "compilerOptions": {
+    "sourceMap": true
+  },
+  "include": [
+    "**/*.ts"
+  ]
+}

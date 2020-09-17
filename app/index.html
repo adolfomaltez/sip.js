@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+  <meta charset="utf-8" />
+  <title>Escenarios SIP.js</title>
+</head>
+
+<body>
+  <h2>Escenarios</h2>
+
+  <p>
+    The SIP.js library and the demos must be built before they will run.
+    <pre>
+    npm install
+    npm run build-demo              
+    </pre>
+    <b>Safari</b> requires either...
+    <ul>
+      <li>enabling <code>Develop -> WebRTC -> Allow Media Capture on Insecure Sites</code></li>
+      <li>or serving the demo from a secure website</li>
+    </ul>
+  </p>
+
+  <h4>1) <a href="./demo-1.html">Caso # 1: Usuario hace login a la aplicacion WEB y se registra su extension en el servidor Asterisk.</a></h4>
+  <ul>
+    <li>Connecting to SIP WebSocket Server</li>
+    <li>Making an outbound audio call</li>
+    <li>Sending DTMF</li>
+    <li>Hold & Mute</li>
+  </ul>
+
+  <h4>2) <a href="./demo-2.html">Caso # 2: Usuario hace llamada a aplicacion IVR en Asterisk.</a></h4>
+  <ul>
+    <li>Connecting to SIP WebSocket Server</li>
+    <li>Registering to receive incoming calls</li>
+    <li>Making an outbound video call</li>
+    <li>Answering incoming calls</li>
+  </ul>
+
+  <h4>3) <a href="./demo-3.html">Caso # 3: Usuario llama a otro Usuario WEB en la misma planta Asterisk.</a></h4>
+  <ul>
+    <li>Connecting to SIP WebSocket Server</li>
+    <li>Registering to receive incoming calls</li>
+    <li>Making an outbound call with data channel</li>
+    <li>Answering incoming call with data channel</li>
+  </ul>
+  <h4>4) <a href="./demo-4.html">Caso # 4: Usuario llama a usuario de Red PSTN. (Telefono celular o fijo).</a></h4>
+  <ul>
+    <li>Connecting to SIP WebSocket Server</li>
+    <li>Registering to receive incoming calls</li>
+    <li>Making an outbound call with data channel</li>
+    <li>Answering incoming call with data channel</li>
+  </ul>
+  <h4>5) <a href="./demo-5.html">Caso # 5: Usuario recibe llamada (y metadata) de red PSTN.</a></h4>
+  <ul>
+    <li>Connecting to SIP WebSocket Server</li>
+    <li>Registering to receive incoming calls</li>
+    <li>Making an outbound call with data channel</li>
+    <li>Answering incoming call with data channel</li>
+  </ul>
+  <h4>6) <a href="./demo-6.html">Caso # 6: Usuario entra en conferencia con 2 o mas usuarios.</a></h4>
+  <ul>
+    <li>Connecting to SIP WebSocket Server</li>
+    <li>Registering to receive incoming calls</li>
+    <li>Making an outbound call with data channel</li>
+    <li>Answering incoming call with data channel</li>
+  </ul>
+
+</body>
+
+</html>
