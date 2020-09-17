@@ -17,8 +17,8 @@ server {
         access_log /var/log/nginx/asterisk.salud.gob.sv-access.log;
         error_log /var/log/nginx/asterisk.salud.gob.sv-error.log;
         
-        root /var/www/html;
-        #index login.php;
+        root /var/www/html/app;
+        index index.html;
 
     location / {
         try_files $uri $uri/ =404;

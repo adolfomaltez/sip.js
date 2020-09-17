@@ -109,7 +109,7 @@
       npm:
         path: /var/www/html/sip.js
 
-    - name: Build demos
+    - name: Install npm
       shell: npm install
       args: 
         chdir: /var/www/html/sip.js
@@ -119,6 +119,14 @@
       args: 
         chdir: /var/www/html/sip.js
        
+# Crear enlace symbolico para la aplicacion
+    - name: Create a symbolic link
+      file:
+        src: /vagrant/app
+        dest: /var/www/html/app
+        owner: root
+        group: root
+        state: link
 
 # instalar php7.3 y postgresql-11
 
