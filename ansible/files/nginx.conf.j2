@@ -1,19 +1,31 @@
 server {
-        listen {{ http_port }};
+        listen 80;
+        listen [::]:80;
+        server_name asterisk.salud.gob.sv;
+        return 301 https://$host$request_uri;
+}
+
+server {
+        listen 443;
+        listen [::]:443;
+        server_name asterisk.salud.gob.sv;
+
+        ssl on;
+        ssl_certificate /etc/asterisk/keys/asterisk.crt;
+        ssl_certificate_key /etc/asterisk/keys/asterisk.key;
+
+        access_log /var/log/nginx/asterisk.salud.gob.sv-access.log;
+        error_log /var/log/nginx/asterisk.salud.gob.sv-error.log;
+        
         root /var/www/html;
-        index index.php index.html index.htm index.nginx-debian.html;
-        server_name {{ http_host }};
+        #index login.php;
 
-        location / {
-                try_files $uri $uri/ =404;
-        }
+    location / {
+        try_files $uri $uri/ =404;
+    }
 
-        location ~ \.php$ {
-                include snippets/fastcgi-php.conf;
-                fastcgi_pass unix:/var/run/php/php7.2-fpm.sock;
-        }
-
-        location ~ /\.ht {
-                deny all;
-        }
+    #location ~ \.php$ {
+    #    include snippets/fastcgi-php.conf;
+    #    fastcgi_pass unix:/var/run/php/php7.3-fpm.sock;
+    #}
 }

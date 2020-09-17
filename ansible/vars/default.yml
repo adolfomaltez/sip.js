@@ -1,5 +1,7 @@
 ---
 mysql_root_password: "mysql_root_password"
-http_host: "your_domain"
-http_conf: "your_domain.conf"
+http_host: "asterisk.salud.gob.sv"
+http_conf: "asterisk.salud.gob.sv"
 http_port: "80"
+host_name: "asterisk"
+host_ip: "192.168.50.10"

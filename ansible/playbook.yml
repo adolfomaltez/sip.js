@@ -15,6 +15,17 @@
     - name: Actualizar timezone
       command: dpkg-reconfigure --frontend noninteractive tzdata
 
+
+# Configurar nombre del hosts
+    - name: "Set Hostname"
+      hostname:
+        name: "{{ host_name }}"
+
+    - name: Agergar entrada al /etc/hosts
+      lineinfile:
+        path: /etc/hosts
+        line: 192.168.50.10 asterisk.salud.gob.sv asterisk
+
     - name: Actualizar paquetes
       apt: name={{ item }} update_cache=yes state=latest force_apt_get=yes
       loop: [ 'aptitude' ]
@@ -35,37 +46,91 @@
         src: "files/certs/"
         dest: "/etc/asterisk/keys"
 
-# Configurar Asterisk para soporte WebRTC
+# Copiar ficheros de configuracion Asterisk para soporte WebRTC
+    - name: Copiar sip.conf
+      template:
+        src: "files/sip.conf.j2"
+        dest: "/etc/asterisk/sip.conf"
 
-# Configurar nombre del hosts
+    - name: Copiar http.conf
+      template:
+        src: "files/http.conf.j2"
+        dest: "/etc/asterisk/http.conf"
 
-# Configurar sip.conf
-
-# Configurar clientes SIP (2 WebRTC SIP y 2 non-WebRTC SIP)
-
-
-# Configurar extensions.conf
-
-# Reiniciar Asterisk
-
-
-
-# Instalacion y configuracion de Nginx
-
-
-# Configurar virtualhost nginx ssl
+    - name: Copiar extensions.conf
+      template:
+        src: "files/extensions.conf.j2"
+        dest: "/etc/asterisk/extensions.conf"
+      notify: Restart Asterisk
 
 
-# habilitar el VirtualHost
+# Configuracion de Nginx y  habilitar el VirtualHost
+    - name: Sets Nginx conf file
+      template:
+        src: "files/nginx.conf.j2"
+        dest: "/etc/nginx/sites-available/{{ http_conf }}"
 
+    - name: Enables new site
+      file:
+        src: "/etc/nginx/sites-available/{{ http_conf }}"
+        dest: "/etc/nginx/sites-enabled/{{ http_conf }}"
+        state: link
+      notify: Reload Nginx
+    
+    - name: Removes "default" site
+      file:
+        path: "/etc/nginx/sites-enabled/default"
+        state: absent
+      notify: Reload Nginx
 
-# Instalar npm
 
 
 # Clonar proyecto sip.js y compilar los demos
 
+    - name: Git clone SIP.js 
+      git:
+        repo: 'https://github.com/onsip/SIP.js.git'
+        dest: /var/www/html/sip.js
+        #version: release-0.22
+
+
+# Instalar npm
+    - name: Install "npm" node.js package globally.
+      npm:
+        name: npm
+        global: yes
+
+    - name: Install "pegjs" node.js package globally.
+      npm:
+        name: pegjs
+        global: yes
+
+    - name: Install sip.js from cloned repository.
+      npm:
+        path: /var/www/html/sip.js
+
+    - name: Build demos
+      shell: npm install
+      args: 
+        chdir: /var/www/html/sip.js
+
+    - name: Build demos
+      shell: npm run build-demo
+      args: 
+        chdir: /var/www/html/sip.js
+       
 
 # instalar php7.3 y postgresql-11
 
 
+# Manejadores
+  handlers:
+    - name: Restart Asterisk
+      service:
+        name: asterisk
+        state: restarted
 
+    - name: Reload Nginx
+      service:
+        name: nginx
+        state: reloaded
